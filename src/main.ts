@@ -8,17 +8,19 @@ import {
 } from 'browser-scraping-utils';
 
 interface FBMember {
-    profileId: string
-    fullName: string
-    profileLink: string
-    bio: string
-    imageSrc: string
-    groupId: string
-    groupJoiningText: string
-    profileType: string
+    profileId: string;
+    fullName: string;
+    profileLink: string;
+    bio: string;
+    imageSrc: string;
+    groupId: string;
+    groupJoiningText: string;
+    profileType: string;
 }
+
 class FBStorage extends ListStorage<FBMember> {
-    name = 'fb-scrape-storage'
+    name = 'fb-scrape-storage';
+    
     get headers() {
         return [
             'Profile Id',
@@ -29,9 +31,10 @@ class FBStorage extends ListStorage<FBMember> {
             'GroupId',
             'Group Joining Text',
             'Profile Type'
-        ]
+        ];
     }
-    itemToRow(item: FBMember): string[]{
+    
+    itemToRow(item: FBMember): string[] {
         return [
             item.profileId,
             item.fullName,
@@ -41,70 +44,74 @@ class FBStorage extends ListStorage<FBMember> {
             item.groupId,
             item.groupJoiningText,
             item.profileType
-        ]
+        ];
     }
 }
-
-
 
 const memberListStore = new FBStorage();
 const counterId = 'fb-group-scraper-number-tracker';
 const exportName = 'groupMemberExport';
-const countThreshold = 200
+const countThreshold = 200;
 
-
-async function updateConter(){
+async function updateCounter() {
     // Update member tracker counter
-    const tracker = document.getElementById(counterId)
-    if(tracker){
+    const tracker = document.getElementById(counterId);
+    if (tracker) {
         const countValue = await memberListStore.getCount();
-        tracker.textContent = countValue.toString()
+        tracker.textContent = countValue.toString();
         if (countValue >= countThreshold) {
             await saveData();
-            await updateConter();
+            await updateCounter();
         }
     }
+    clearScrapedDivs();
 }
 
 async function saveData() {
-    const timestamp = new Date().toISOString()
-    const data = await memberListStore.toCsvData()
-    try{
-        exportToCsv(`${exportName}-${timestamp}.csv`, data)
+    const timestamp = new Date().toISOString();
+    const data = await memberListStore.toCsvData();
+    try {
+        exportToCsv(`${exportName}-${timestamp}.csv`, data);
         await memberListStore.clear();
-    }catch(err){
+    } catch (err) {
         console.error('Error while generating export');
         // @ts-ignore
-        console.log(err.stack)
+        console.log(err.stack);
     }
+}
+
+function clearScrapedDivs() {
+    const scrapedDivs = document.querySelectorAll('div[data-visualcompletion="ignore-dynamic"][role="listitem"][style="padding-left: 8px; padding-right: 8px;"]');
+    scrapedDivs.forEach(div => {
+        div.remove();
+    });
 }
 
 const uiWidget = new UIContainer();
 
-function buildCTABtn(){
-    
+function buildCTABtn() {
     // Button Download
     const btnDownload = createCta();
-    btnDownload.appendChild(createTextSpan('Download\u00A0'))
+    btnDownload.appendChild(createTextSpan('Download\u00A0'));
     btnDownload.appendChild(createTextSpan('0', {
         bold: true,
         idAttribute: counterId
-    }))
-    btnDownload.appendChild(createTextSpan('\u00A0users'))
+    }));
+    btnDownload.appendChild(createTextSpan('\u00A0users'));
 
     btnDownload.addEventListener('click', saveData);
 
-    uiWidget.addCta(btnDownload)
+    uiWidget.addCta(btnDownload);
 
     // Spacer
-    uiWidget.addCta(createSpacer())
+    uiWidget.addCta(createSpacer());
 
     // Button Reinit
     const btnReinit = createCta();
-    btnReinit.appendChild(createTextSpan('Reset'))
-    btnReinit.addEventListener('click', async function() {
+    btnReinit.appendChild(createTextSpan('Reset'));
+    btnReinit.addEventListener('click', async function () {
         await memberListStore.clear();
-        await updateConter();
+        await updateCounter();
     });
     uiWidget.addCta(btnReinit);
 
@@ -112,21 +119,21 @@ function buildCTABtn(){
     uiWidget.makeItDraggable();
 
     // Render
-    uiWidget.render()
+    uiWidget.render();
 
     // Initial
-    window.setTimeout(()=>{
-        updateConter()
-    }, 1000)
+    window.setTimeout(() => {
+        updateCounter();
+    }, 1000);
 }
 
-function processResponse(dataGraphQL: any): void{
+function processResponse(dataGraphQL: any): void {
     // Only look for Group GraphQL responses
     let data: any;
-    if(dataGraphQL?.data?.group){
+    if (dataGraphQL?.data?.group) {
         // Initial Group members page
         data = dataGraphQL.data.group;
-    } else if(dataGraphQL?.data?.node?.__typename === 'Group'){
+    } else if (dataGraphQL?.data?.node?.__typename === 'Group') {
         // New members load on scroll
         data = dataGraphQL.data.node;
     } else {
@@ -136,22 +143,22 @@ function processResponse(dataGraphQL: any): void{
 
     let membersEdges: Array<any>;
     // Both are used (new_forum_members seems to be the new way)
-    if(data?.new_members?.edges){
+    if (data?.new_members?.edges) {
         membersEdges = data.new_members.edges;
-    }else if(data?.new_forum_members?.edges){
+    } else if (data?.new_forum_members?.edges) {
         membersEdges = data.new_forum_members.edges;
-    }else if(data?.search_results?.edges){
+    } else if (data?.search_results?.edges) {
         membersEdges = data.search_results.edges;
-    }else{
-        return
+    } else {
+        return;
     }
 
-    const membersData = membersEdges.map(memberNode=>{
+    const membersData = membersEdges.map(memberNode => {
         const nodeType = memberNode.node.__isEntity;
         const node = nodeType === "GroupUserInvite" ? memberNode.node.invitee_profile : memberNode.node;
 
-        if(!node){
-            return null
+        if (!node) {
+            return null;
         }
 
         // Member Data
@@ -161,14 +168,14 @@ function processResponse(dataGraphQL: any): void{
             bio_text,
             url,
             profile_picture,
-            __isProfile:profileType
+            __isProfile: profileType
         } = node;
 
         // Group Joining Info
         const joiningText = memberNode?.join_status_text?.text || memberNode?.membership?.join_status_text?.text;
 
         // Facebook Group Id
-        const groupId = node.group_membership?.associated_group.id
+        const groupId = node.group_membership?.associated_group.id;
 
         return {
             profileId: id,
@@ -179,61 +186,59 @@ function processResponse(dataGraphQL: any): void{
             groupId: groupId,
             groupJoiningText: joiningText || '',
             profileType: profileType
+        };
+    });
+
+    const toAdd: [string, FBMember][] = [];
+    membersData.forEach(memberData => {
+        if (memberData) {
+            toAdd.push([memberData.profileId, memberData]);
         }
-    })
+    });
 
-    const toAdd: [string, FBMember][] = []
-    membersData.forEach(memberData=>{
-        if(memberData){
-            toAdd.push([memberData.profileId, memberData])
-        }
-    })
-
-    memberListStore.addElems(toAdd).then(()=>{
-        updateConter();
-        
-    })
-
+    memberListStore.addElems(toAdd).then(() => {
+        updateCounter();
+    });
 }
 
-function parseResponse(dataRaw: string): void{
+function parseResponse(dataRaw: string): void {
     let dataGraphQL: Array<any> = [];
-    try{
-        dataGraphQL.push(JSON.parse(dataRaw))
-    }catch(err){
+    try {
+        dataGraphQL.push(JSON.parse(dataRaw));
+    } catch (err) {
         // Sometime Facebook return multiline response
         const splittedData = dataRaw.split("\n");
 
         // If not a multiline response
-        if(splittedData.length<=1){
+        if (splittedData.length <= 1) {
             console.error('Fail to parse API response', err);
             return;
         }
 
         // Multiline response. Parse each response
-        for(let i=0; i<splittedData.length;i++){
+        for (let i = 0; i < splittedData.length; i++) {
             const newDataRaw = splittedData[i];
-            try{
+            try {
                 dataGraphQL.push(JSON.parse(newDataRaw));
-            }catch(err2){
+            } catch (err2) {
                 console.error('Fail to parse API response', err);
             }
         }
     }
 
-    for(let j=0; j<dataGraphQL.length; j++){
-        processResponse(dataGraphQL[j])
+    for (let j = 0; j < dataGraphQL.length; j++) {
+        processResponse(dataGraphQL[j]);
     }
 }
 
 function main(): void {
-    buildCTABtn()
+    buildCTABtn();
 
     // Watch API calls to find GraphQL responses to parse
     const matchingUrl = '/api/graphql/';
     let send = XMLHttpRequest.prototype.send;
-    XMLHttpRequest.prototype.send = function() {
-        this.addEventListener('readystatechange', function() {
+    XMLHttpRequest.prototype.send = function () {
+        this.addEventListener('readystatechange', function () {
             if (this.responseURL.includes(matchingUrl) && this.readyState === 4) {
                 parseResponse(this.responseText);
             }
@@ -244,9 +249,14 @@ function main(): void {
 }
 
 main();
-const delay = 10
-const gap = 20
-setInterval(function () {
+
+const delay = 10;
+const gap = 20;
+const scrollInterval = setInterval(function () {
     window.scrollBy(0, gap);
 }, delay);
 
+// Add an event listener to clear the interval when no longer needed
+window.addEventListener('beforeunload', () => {
+    clearInterval(scrollInterval);
+});

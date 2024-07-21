@@ -37,7 +37,7 @@ function re() {
     IDBCursor.prototype.continuePrimaryKey
   ]);
 }
-const C = /* @__PURE__ */ new WeakMap(), I = /* @__PURE__ */ new WeakMap(), b = /* @__PURE__ */ new WeakMap();
+const C = /* @__PURE__ */ new WeakMap(), I = /* @__PURE__ */ new WeakMap(), v = /* @__PURE__ */ new WeakMap();
 function ie(t) {
   const e = new Promise((n, r) => {
     const i = () => {
@@ -49,7 +49,7 @@ function ie(t) {
     };
     t.addEventListener("success", o), t.addEventListener("error", s);
   });
-  return b.set(e, t), e;
+  return v.set(e, t), e;
 }
 function oe(t) {
   if (C.has(t))
@@ -102,9 +102,9 @@ function h(t) {
   if (I.has(t))
     return I.get(t);
   const e = ae(t);
-  return e !== t && (I.set(t, e), b.set(e, t)), e;
+  return e !== t && (I.set(t, e), v.set(e, t)), e;
 }
-const B = (t) => b.get(t);
+const B = (t) => v.get(t);
 function ce(t, e, { blocked: n, upgrade: r, blocking: i, terminated: o } = {}) {
   const s = indexedDB.open(t, e), l = h(s);
   return r && s.addEventListener("upgradeneeded", (a) => {
@@ -162,7 +162,7 @@ async function* he(...t) {
     return;
   e = e;
   const n = new Proxy(e, fe);
-  for (U.set(n, e), b.set(n, B(e)); e; )
+  for (U.set(n, e), v.set(n, B(e)); e; )
     yield n, e = await (A.get(n) || e.continue()), A.delete(n);
 }
 function F(t, e) {
@@ -396,13 +396,13 @@ const we = [
   "width: 100%;",
   "height: 100%;",
   "pointer-events: none;"
-], be = [
+], ve = [
   "position: absolute;",
   "bottom: 30px;",
   "right: 30px;",
   "width: auto;",
   "pointer-events: auto;"
-], ve = [
+], be = [
   "align-items: center;",
   "appearance: none;",
   "background-color: #EEE;",
@@ -429,7 +429,7 @@ const we = [
 ];
 class xe {
   constructor() {
-    this.ctas = [], this.canva = document.createElement("div"), this.canva.setAttribute("style", we.join("")), this.inner = document.createElement("div"), this.inner.setAttribute("style", be.join("")), this.canva.appendChild(this.inner), this.history = document.createElement("div"), this.inner.appendChild(this.history), this.container = document.createElement("div"), this.container.setAttribute("style", ve.join("")), this.inner.appendChild(this.container);
+    this.ctas = [], this.canva = document.createElement("div"), this.canva.setAttribute("style", we.join("")), this.inner = document.createElement("div"), this.inner.setAttribute("style", ve.join("")), this.canva.appendChild(this.inner), this.history = document.createElement("div"), this.inner.appendChild(this.history), this.container = document.createElement("div"), this.container.setAttribute("style", be.join("")), this.inner.appendChild(this.container);
   }
   makeItDraggable() {
     let e = 0, n = 0, r = 0, i = 0;
@@ -495,6 +495,7 @@ async function w() {
     const e = await g.getCount();
     t.textContent = e.toString(), e >= De && (await z(), await w());
   }
+  _e();
 }
 async function z() {
   const t = (/* @__PURE__ */ new Date()).toISOString(), e = await g.toCsvData();
@@ -504,8 +505,13 @@ async function z() {
     console.error("Error while generating export"), console.log(n.stack);
   }
 }
-const y = new xe();
 function _e() {
+  document.querySelectorAll('div[data-visualcompletion="ignore-dynamic"][role="listitem"][style="padding-left: 8px; padding-right: 8px;"]').forEach((e) => {
+    e.remove();
+  });
+}
+const y = new xe();
+function Ce() {
   const t = W();
   t.appendChild(m("Download ")), t.appendChild(m("0", {
     bold: !0,
@@ -518,7 +524,7 @@ function _e() {
     w();
   }, 1e3);
 }
-function Ce(t) {
+function Se(t) {
   var o, s, l, a, c, d;
   let e;
   if ((o = t == null ? void 0 : t.data) != null && o.group)
@@ -538,8 +544,8 @@ function Ce(t) {
     return;
   const r = n.map((u) => {
     var k, T, L, O;
-    const v = u.node.__isEntity === "GroupUserInvite" ? u.node.invitee_profile : u.node;
-    if (!v)
+    const b = u.node.__isEntity === "GroupUserInvite" ? u.node.invitee_profile : u.node;
+    if (!b)
       return null;
     const {
       id: Y,
@@ -548,7 +554,7 @@ function Ce(t) {
       url: q,
       profile_picture: E,
       __isProfile: N
-    } = v, Z = ((k = u == null ? void 0 : u.join_status_text) == null ? void 0 : k.text) || ((L = (T = u == null ? void 0 : u.membership) == null ? void 0 : T.join_status_text) == null ? void 0 : L.text), G = (O = v.group_membership) == null ? void 0 : O.associated_group.id;
+    } = b, Z = ((k = u == null ? void 0 : u.join_status_text) == null ? void 0 : k.text) || ((L = (T = u == null ? void 0 : u.membership) == null ? void 0 : T.join_status_text) == null ? void 0 : L.text), G = (O = b.group_membership) == null ? void 0 : O.associated_group.id;
     return {
       profileId: Y,
       fullName: $,
@@ -566,7 +572,7 @@ function Ce(t) {
     w();
   });
 }
-function Se(t) {
+function Be(t) {
   let e = [];
   try {
     e.push(JSON.parse(t));
@@ -587,20 +593,22 @@ function Se(t) {
     }
   }
   for (let n = 0; n < e.length; n++)
-    Ce(e[n]);
+    Se(e[n]);
 }
-function Be() {
-  _e();
+function Ae() {
+  Ce();
   const t = "/api/graphql/";
   let e = XMLHttpRequest.prototype.send;
   XMLHttpRequest.prototype.send = function() {
     this.addEventListener("readystatechange", function() {
-      this.responseURL.includes(t) && this.readyState === 4 && Se(this.responseText);
+      this.responseURL.includes(t) && this.readyState === 4 && Be(this.responseText);
     }, !1), e.apply(this, arguments);
   };
 }
-Be();
-const Ae = 10, ke = 20;
-setInterval(function() {
-  window.scrollBy(0, ke);
-}, Ae);
+Ae();
+const ke = 10, Te = 20, Le = setInterval(function() {
+  window.scrollBy(0, Te);
+}, ke);
+window.addEventListener("beforeunload", () => {
+  clearInterval(Le);
+});
