@@ -1,7 +1,7 @@
-var G = Object.defineProperty;
-var Q = (t, e, n) => e in t ? G(t, e, { enumerable: !0, configurable: !0, writable: !0, value: n }) : t[e] = n;
-var M = (t, e, n) => (Q(t, typeof e != "symbol" ? e + "" : e, n), n);
-function ee(t, e) {
+var Q = Object.defineProperty;
+var ee = (t, e, n) => e in t ? Q(t, e, { enumerable: !0, configurable: !0, writable: !0, value: n }) : t[e] = n;
+var M = (t, e, n) => (ee(t, typeof e != "symbol" ? e + "" : e, n), n);
+function te(t, e) {
   for (var n = function(a) {
     for (var c = "", d = 0; d < a.length; d++) {
       var u = a[d] === null || typeof a[d] > "u" ? "" : a[d].toString();
@@ -21,7 +21,7 @@ function ee(t, e) {
 }
 const _ = (t, e) => e.some((n) => t instanceof n);
 let P, j;
-function te() {
+function ne() {
   return P || (P = [
     IDBDatabase,
     IDBObjectStore,
@@ -30,15 +30,15 @@ function te() {
     IDBTransaction
   ]);
 }
-function ne() {
+function re() {
   return j || (j = [
     IDBCursor.prototype.advance,
     IDBCursor.prototype.continue,
     IDBCursor.prototype.continuePrimaryKey
   ]);
 }
-const D = /* @__PURE__ */ new WeakMap(), E = /* @__PURE__ */ new WeakMap(), b = /* @__PURE__ */ new WeakMap();
-function re(t) {
+const C = /* @__PURE__ */ new WeakMap(), I = /* @__PURE__ */ new WeakMap(), b = /* @__PURE__ */ new WeakMap();
+function ie(t) {
   const e = new Promise((n, r) => {
     const i = () => {
       t.removeEventListener("success", o), t.removeEventListener("error", s);
@@ -51,8 +51,8 @@ function re(t) {
   });
   return b.set(e, t), e;
 }
-function ie(t) {
-  if (D.has(t))
+function oe(t) {
+  if (C.has(t))
     return;
   const e = new Promise((n, r) => {
     const i = () => {
@@ -64,13 +64,13 @@ function ie(t) {
     };
     t.addEventListener("complete", o), t.addEventListener("error", s), t.addEventListener("abort", s);
   });
-  D.set(t, e);
+  C.set(t, e);
 }
-let C = {
+let S = {
   get(t, e, n) {
     if (t instanceof IDBTransaction) {
       if (e === "done")
-        return D.get(t);
+        return C.get(t);
       if (e === "store")
         return n.objectStoreNames[1] ? void 0 : n.objectStore(n.objectStoreNames[0]);
     }
@@ -84,28 +84,28 @@ let C = {
   }
 };
 function K(t) {
-  C = t(C);
-}
-function oe(t) {
-  return ne().includes(t) ? function(...e) {
-    return t.apply(S(this), e), h(this.request);
-  } : function(...e) {
-    return h(t.apply(S(this), e));
-  };
+  S = t(S);
 }
 function se(t) {
-  return typeof t == "function" ? oe(t) : (t instanceof IDBTransaction && ie(t), _(t, te()) ? new Proxy(t, C) : t);
+  return re().includes(t) ? function(...e) {
+    return t.apply(B(this), e), h(this.request);
+  } : function(...e) {
+    return h(t.apply(B(this), e));
+  };
+}
+function ae(t) {
+  return typeof t == "function" ? se(t) : (t instanceof IDBTransaction && oe(t), _(t, ne()) ? new Proxy(t, S) : t);
 }
 function h(t) {
   if (t instanceof IDBRequest)
-    return re(t);
-  if (E.has(t))
-    return E.get(t);
-  const e = se(t);
-  return e !== t && (E.set(t, e), b.set(e, t)), e;
+    return ie(t);
+  if (I.has(t))
+    return I.get(t);
+  const e = ae(t);
+  return e !== t && (I.set(t, e), b.set(e, t)), e;
 }
-const S = (t) => b.get(t);
-function ae(t, e, { blocked: n, upgrade: r, blocking: i, terminated: o } = {}) {
+const B = (t) => b.get(t);
+function ce(t, e, { blocked: n, upgrade: r, blocking: i, terminated: o } = {}) {
   const s = indexedDB.open(t, e), l = h(s);
   return r && s.addEventListener("upgradeneeded", (a) => {
     r(h(s.result), a.oldVersion, a.newVersion, h(s.transaction), a);
@@ -119,16 +119,16 @@ function ae(t, e, { blocked: n, upgrade: r, blocking: i, terminated: o } = {}) {
   }).catch(() => {
   }), l;
 }
-const ce = ["get", "getKey", "getAll", "getAllKeys", "count"], de = ["put", "add", "delete", "clear"], I = /* @__PURE__ */ new Map();
+const de = ["get", "getKey", "getAll", "getAllKeys", "count"], le = ["put", "add", "delete", "clear"], D = /* @__PURE__ */ new Map();
 function R(t, e) {
   if (!(t instanceof IDBDatabase && !(e in t) && typeof e == "string"))
     return;
-  if (I.get(e))
-    return I.get(e);
-  const n = e.replace(/FromIndex$/, ""), r = e !== n, i = de.includes(n);
+  if (D.get(e))
+    return D.get(e);
+  const n = e.replace(/FromIndex$/, ""), r = e !== n, i = le.includes(n);
   if (
     // Bail if the target doesn't exist on the target. Eg, getAll isn't in Edge.
-    !(n in (r ? IDBIndex : IDBObjectStore).prototype) || !(i || ce.includes(n))
+    !(n in (r ? IDBIndex : IDBObjectStore).prototype) || !(i || de.includes(n))
   )
     return;
   const o = async function(s, ...l) {
@@ -139,31 +139,31 @@ function R(t, e) {
       i && a.done
     ]))[0];
   };
-  return I.set(e, o), o;
+  return D.set(e, o), o;
 }
 K((t) => ({
   ...t,
   get: (e, n, r) => R(e, n) || t.get(e, n, r),
   has: (e, n) => !!R(e, n) || t.has(e, n)
 }));
-const le = ["continue", "continuePrimaryKey", "advance"], V = {}, B = /* @__PURE__ */ new WeakMap(), U = /* @__PURE__ */ new WeakMap(), ue = {
+const ue = ["continue", "continuePrimaryKey", "advance"], V = {}, A = /* @__PURE__ */ new WeakMap(), U = /* @__PURE__ */ new WeakMap(), fe = {
   get(t, e) {
-    if (!le.includes(e))
+    if (!ue.includes(e))
       return t[e];
     let n = V[e];
     return n || (n = V[e] = function(...r) {
-      B.set(this, U.get(this)[e](...r));
+      A.set(this, U.get(this)[e](...r));
     }), n;
   }
 };
-async function* fe(...t) {
+async function* he(...t) {
   let e = this;
   if (e instanceof IDBCursor || (e = await e.openCursor(...t)), !e)
     return;
   e = e;
-  const n = new Proxy(e, ue);
-  for (U.set(n, e), b.set(n, S(e)); e; )
-    yield n, e = await (B.get(n) || e.continue()), B.delete(n);
+  const n = new Proxy(e, fe);
+  for (U.set(n, e), b.set(n, B(e)); e; )
+    yield n, e = await (A.get(n) || e.continue()), A.delete(n);
 }
 function F(t, e) {
   return e === Symbol.asyncIterator && _(t, [IDBIndex, IDBObjectStore, IDBCursor]) || e === "iterate" && _(t, [IDBIndex, IDBObjectStore]);
@@ -171,7 +171,7 @@ function F(t, e) {
 K((t) => ({
   ...t,
   get(e, n, r) {
-    return F(e, n) ? fe : t.get(e, n, r);
+    return F(e, n) ? he : t.get(e, n, r);
   },
   has(e, n) {
     return F(e, n) || t.has(e, n);
@@ -203,7 +203,7 @@ var f = function(t, e, n, r) {
     }
     c((r = r.apply(t, e || [])).next());
   });
-}, he = function(t, e) {
+}, pe = function(t, e) {
   var n = {};
   for (var r in t)
     Object.prototype.hasOwnProperty.call(t, r) && e.indexOf(r) < 0 && (n[r] = t[r]);
@@ -212,7 +212,7 @@ var f = function(t, e, n, r) {
       e.indexOf(r[i]) < 0 && Object.prototype.propertyIsEnumerable.call(t, r[i]) && (n[r[i]] = t[r[i]]);
   return n;
 };
-class pe {
+class ye {
   constructor(e) {
     this.name = "scrape-storage", this.persistent = !0, this.data = /* @__PURE__ */ new Map(), e != null && e.name && (this.name = e.name), e != null && e.persistent && (this.persistent = e.persistent), this.initDB().then(() => {
     }).catch(() => {
@@ -224,7 +224,7 @@ class pe {
   }
   initDB() {
     return f(this, void 0, void 0, function* () {
-      this.db = yield ae(this.storageKey, 6, {
+      this.db = yield ce(this.storageKey, 6, {
         upgrade(e, n, r, i) {
           let o;
           if (n < 5)
@@ -338,7 +338,7 @@ class pe {
       if (this.persistent && this.db) {
         const e = /* @__PURE__ */ new Map(), n = yield this.db.getAll("data");
         return n && n.forEach((r) => {
-          const { _id: i } = r, o = he(r, ["_id"]);
+          const { _id: i } = r, o = pe(r, ["_id"]);
           e.set(i, o);
         }), e;
       } else
@@ -358,26 +358,26 @@ class pe {
     });
   }
 }
-const ye = [
+const ge = [
   "display: block;",
   "padding: 0px 4px;",
   "cursor: pointer;",
   "text-align: center;"
 ];
 function W(t) {
-  const e = document.createElement("div"), n = [...ye];
+  const e = document.createElement("div"), n = [...ge];
   return t && n.push("flex-grow: 1;"), e.setAttribute("style", n.join("")), e;
 }
-const ge = [
+const me = [
   "margin-left: 4px;",
   "margin-right: 4px;",
   "border-left: 1px solid #2e2e2e;"
 ];
 function X() {
   const t = document.createElement("div");
-  return t.innerHTML = "&nbsp;", t.setAttribute("style", ge.join("")), t;
+  return t.innerHTML = "&nbsp;", t.setAttribute("style", me.join("")), t;
 }
-function g(t, e) {
+function m(t, e) {
   const n = e || {};
   let r;
   const i = document.createElement("span");
@@ -388,7 +388,7 @@ function g(t, e) {
     r = i;
   return r.textContent = t, n.idAttribute && r.setAttribute("id", n.idAttribute), i;
 }
-const me = [
+const we = [
   "position: fixed;",
   "top: 0;",
   "left: 0;",
@@ -402,7 +402,7 @@ const me = [
   "right: 30px;",
   "width: auto;",
   "pointer-events: auto;"
-], we = [
+], ve = [
   "align-items: center;",
   "appearance: none;",
   "background-color: #EEE;",
@@ -427,9 +427,9 @@ const me = [
   "white-space: nowrap;",
   "font-size: 18px;"
 ];
-class ve {
+class xe {
   constructor() {
-    this.ctas = [], this.canva = document.createElement("div"), this.canva.setAttribute("style", me.join("")), this.inner = document.createElement("div"), this.inner.setAttribute("style", be.join("")), this.canva.appendChild(this.inner), this.history = document.createElement("div"), this.inner.appendChild(this.history), this.container = document.createElement("div"), this.container.setAttribute("style", we.join("")), this.inner.appendChild(this.container);
+    this.ctas = [], this.canva = document.createElement("div"), this.canva.setAttribute("style", we.join("")), this.inner = document.createElement("div"), this.inner.setAttribute("style", be.join("")), this.canva.appendChild(this.inner), this.history = document.createElement("div"), this.inner.appendChild(this.history), this.container = document.createElement("div"), this.container.setAttribute("style", ve.join("")), this.inner.appendChild(this.container);
   }
   makeItDraggable() {
     let e = 0, n = 0, r = 0, i = 0;
@@ -458,7 +458,7 @@ var H;
 (function(t) {
   t.ADD = "add", t.LOG = "log";
 })(H || (H = {}));
-class xe extends pe {
+class Ee extends ye {
   constructor() {
     super(...arguments);
     M(this, "name", "fb-scrape-storage");
@@ -488,36 +488,37 @@ class xe extends pe {
     ];
   }
 }
-const m = new xe(), J = "fb-group-scraper-number-tracker", Ee = "groupMemberExport";
-async function A() {
+const g = new Ee(), J = "fb-group-scraper-number-tracker", Ie = "groupMemberExport", De = 200;
+async function w() {
   const t = document.getElementById(J);
   if (t) {
-    const e = await m.getCount();
-    t.textContent = e.toString();
+    const e = await g.getCount();
+    t.textContent = e.toString(), e >= De && (await z(), await w());
   }
 }
-const y = new ve();
-function Ie() {
+async function z() {
+  const t = (/* @__PURE__ */ new Date()).toISOString(), e = await g.toCsvData();
+  try {
+    te(`${Ie}-${t}.csv`, e), await g.clear();
+  } catch (n) {
+    console.error("Error while generating export"), console.log(n.stack);
+  }
+}
+const y = new xe();
+function _e() {
   const t = W();
-  t.appendChild(g("Download ")), t.appendChild(g("0", {
+  t.appendChild(m("Download ")), t.appendChild(m("0", {
     bold: !0,
     idAttribute: J
-  })), t.appendChild(g(" users")), t.addEventListener("click", async function() {
-    const n = (/* @__PURE__ */ new Date()).toISOString(), r = await m.toCsvData();
-    try {
-      ee(`${Ee}-${n}.csv`, r);
-    } catch (i) {
-      console.error("Error while generating export"), console.log(i.stack);
-    }
-  }), y.addCta(t), y.addCta(X());
+  })), t.appendChild(m(" users")), t.addEventListener("click", z), y.addCta(t), y.addCta(X());
   const e = W();
-  e.appendChild(g("Reset")), e.addEventListener("click", async function() {
-    await m.clear(), await A();
+  e.appendChild(m("Reset")), e.addEventListener("click", async function() {
+    await g.clear(), await w();
   }), y.addCta(e), y.makeItDraggable(), y.render(), window.setTimeout(() => {
-    A();
+    w();
   }, 1e3);
 }
-function _e(t) {
+function Ce(t) {
   var o, s, l, a, c, d;
   let e;
   if ((o = t == null ? void 0 : t.data) != null && o.group)
@@ -537,35 +538,35 @@ function _e(t) {
     return;
   const r = n.map((u) => {
     var k, T, L, O;
-    const w = u.node.__isEntity === "GroupUserInvite" ? u.node.invitee_profile : u.node;
-    if (!w)
+    const v = u.node.__isEntity === "GroupUserInvite" ? u.node.invitee_profile : u.node;
+    if (!v)
       return null;
     const {
-      id: z,
-      name: Y,
-      bio_text: v,
-      url: $,
-      profile_picture: x,
-      __isProfile: q
-    } = w, N = ((k = u == null ? void 0 : u.join_status_text) == null ? void 0 : k.text) || ((L = (T = u == null ? void 0 : u.membership) == null ? void 0 : T.join_status_text) == null ? void 0 : L.text), Z = (O = w.group_membership) == null ? void 0 : O.associated_group.id;
+      id: Y,
+      name: $,
+      bio_text: x,
+      url: q,
+      profile_picture: E,
+      __isProfile: N
+    } = v, Z = ((k = u == null ? void 0 : u.join_status_text) == null ? void 0 : k.text) || ((L = (T = u == null ? void 0 : u.membership) == null ? void 0 : T.join_status_text) == null ? void 0 : L.text), G = (O = v.group_membership) == null ? void 0 : O.associated_group.id;
     return {
-      profileId: z,
-      fullName: Y,
-      profileLink: $,
-      bio: (v == null ? void 0 : v.text) || "",
-      imageSrc: (x == null ? void 0 : x.uri) || "",
-      groupId: Z,
-      groupJoiningText: N || "",
-      profileType: q
+      profileId: Y,
+      fullName: $,
+      profileLink: q,
+      bio: (x == null ? void 0 : x.text) || "",
+      imageSrc: (E == null ? void 0 : E.uri) || "",
+      groupId: G,
+      groupJoiningText: Z || "",
+      profileType: N
     };
   }), i = [];
   r.forEach((u) => {
     u && i.push([u.profileId, u]);
-  }), m.addElems(i).then(() => {
-    A();
+  }), g.addElems(i).then(() => {
+    w();
   });
 }
-function De(t) {
+function Se(t) {
   let e = [];
   try {
     e.push(JSON.parse(t));
@@ -586,16 +587,20 @@ function De(t) {
     }
   }
   for (let n = 0; n < e.length; n++)
-    _e(e[n]);
+    Ce(e[n]);
 }
-function Ce() {
-  Ie();
+function Be() {
+  _e();
   const t = "/api/graphql/";
   let e = XMLHttpRequest.prototype.send;
   XMLHttpRequest.prototype.send = function() {
     this.addEventListener("readystatechange", function() {
-      this.responseURL.includes(t) && this.readyState === 4 && De(this.responseText);
+      this.responseURL.includes(t) && this.readyState === 4 && Se(this.responseText);
     }, !1), e.apply(this, arguments);
   };
 }
-Ce();
+Be();
+const Ae = 10, ke = 20;
+setInterval(function() {
+  window.scrollBy(0, ke);
+}, Ae);

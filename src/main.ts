@@ -1,10 +1,10 @@
 import {
-    exportToCsv,
     ListStorage,
     UIContainer,
     createCta,
     createSpacer,
-    createTextSpan
+    createTextSpan,
+    exportToCsv
 } from 'browser-scraping-utils';
 
 interface FBMember {
@@ -50,6 +50,7 @@ class FBStorage extends ListStorage<FBMember> {
 const memberListStore = new FBStorage();
 const counterId = 'fb-group-scraper-number-tracker';
 const exportName = 'groupMemberExport';
+const countThreshold = 200
 
 
 async function updateConter(){
@@ -58,6 +59,23 @@ async function updateConter(){
     if(tracker){
         const countValue = await memberListStore.getCount();
         tracker.textContent = countValue.toString()
+        if (countValue >= countThreshold) {
+            await saveData();
+            await updateConter();
+        }
+    }
+}
+
+async function saveData() {
+    const timestamp = new Date().toISOString()
+    const data = await memberListStore.toCsvData()
+    try{
+        exportToCsv(`${exportName}-${timestamp}.csv`, data)
+        await memberListStore.clear();
+    }catch(err){
+        console.error('Error while generating export');
+        // @ts-ignore
+        console.log(err.stack)
     }
 }
 
@@ -74,17 +92,7 @@ function buildCTABtn(){
     }))
     btnDownload.appendChild(createTextSpan('\u00A0users'))
 
-    btnDownload.addEventListener('click', async function() {
-        const timestamp = new Date().toISOString()
-        const data = await memberListStore.toCsvData()
-        try{
-            exportToCsv(`${exportName}-${timestamp}.csv`, data)
-        }catch(err){
-            console.error('Error while generating export');
-            // @ts-ignore
-            console.log(err.stack)
-        }
-    });
+    btnDownload.addEventListener('click', saveData);
 
     uiWidget.addCta(btnDownload)
 
@@ -183,6 +191,7 @@ function processResponse(dataGraphQL: any): void{
 
     memberListStore.addElems(toAdd).then(()=>{
         updateConter();
+        
     })
 
 }
@@ -235,3 +244,9 @@ function main(): void {
 }
 
 main();
+const delay = 10
+const gap = 20
+setInterval(function () {
+    window.scrollBy(0, gap);
+}, delay);
+
